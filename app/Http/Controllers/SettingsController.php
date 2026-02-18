@@ -249,6 +249,7 @@ class SettingsController extends Controller
             'sms_extra_params' => ['nullable', 'string', 'max:1000'],
             'sms_template_billing' => ['nullable', 'string', 'max:500'],
             'sms_template_report_ready' => ['nullable', 'string', 'max:500'],
+            'sms_template_report_link' => ['nullable', 'string', 'max:500'],
             'whatsapp_number' => ['nullable', 'string', 'max:50'],
             'social_facebook' => ['nullable', 'string', 'max:255'],
             'social_instagram' => ['nullable', 'string', 'max:255'],

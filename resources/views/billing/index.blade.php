@@ -577,6 +577,100 @@
         flex-direction: column;
         gap: 4px;
     }
+
+    @media (max-width: 720px) {
+        .billing-header {
+            font-size: 16px;
+            padding: 8px 12px;
+        }
+
+        .billing-tabs {
+            flex-direction: column;
+            gap: 8px;
+            padding: 8px 12px;
+        }
+
+        .billing-tabs .tab-btn {
+            font-size: 14px;
+        }
+
+        .billing-body {
+            padding: 12px;
+        }
+
+        .grid-4,
+        .grid-3,
+        .grid-2 {
+            grid-template-columns: 1fr;
+        }
+
+        .span-2,
+        .span-3,
+        .span-4 {
+            grid-column: span 1;
+        }
+
+        .field input,
+        .field select {
+            height: 40px;
+            font-size: 14px;
+        }
+
+        .section,
+        .part-header,
+        .part-patient,
+        .part-payment,
+        .part-actions {
+            padding: 10px;
+            border-radius: 10px;
+        }
+
+        .test-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .test-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-start;
+        }
+
+        .btn-mini {
+            width: auto;
+            min-width: 36px;
+        }
+
+        .options-row,
+        .controls-row,
+        .action-row {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .action-row .btn {
+            width: 100%;
+        }
+
+        .totals,
+        .payment-bar {
+            grid-template-columns: 1fr;
+        }
+
+        .table-wrap {
+            border: none;
+            background: transparent;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        table {
+            min-width: 560px;
+        }
+
+        .scroll-area {
+            max-height: 240px;
+        }
+    }
 </style>
 
     <div class="ui-page">
@@ -717,7 +811,7 @@
                             </div>
                             <div class="field">
                             <label class="ui-label ui-required">Tele. No</label>
-                            <input type="text" name="phone" id="phone" class="ui-input" placeholder="+94" required>
+                            <input type="text" name="phone" id="phone" class="ui-input" placeholder="0123456789" required>
                             <div class="error-note" id="phoneError">Phone number is required.</div>
                         </div>
                         </div>
@@ -2013,7 +2107,8 @@
                 optShowInvoice.checked = localStorage.getItem('billing_show_invoice') === '1';
                 optShowInvoiceNo.checked = localStorage.getItem('billing_show_invoice_no') === '1';
                 if (optSendSms) {
-                    optSendSms.checked = localStorage.getItem('billing_send_sms') === '1';
+                    var storedSms = localStorage.getItem('billing_send_sms');
+                    optSendSms.checked = storedSms === null ? true : storedSms === '1';
                 }
                 syncOptions();
             }

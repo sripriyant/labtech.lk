@@ -139,6 +139,78 @@
             color: #0369a1;
             border-color: #bae6fd;
         }
+
+        @media (max-width: 720px) {
+            .toolbar {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .table-wrap {
+                border: none;
+                background: transparent;
+            }
+
+            table,
+            thead,
+            tbody,
+            tr,
+            th,
+            td {
+                display: block;
+                width: 100%;
+            }
+
+            thead {
+                display: none;
+            }
+
+            tbody tr {
+                background: #fff;
+                border: 1px solid var(--line);
+                border-radius: 12px;
+                padding: 10px 12px;
+                margin-bottom: 12px;
+            }
+
+            tbody td {
+                border: none;
+                padding: 6px 0;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                gap: 10px;
+            }
+
+            tbody td::before {
+                content: attr(data-label);
+                font-weight: 600;
+                color: var(--muted);
+                font-size: 12px;
+            }
+
+            .patient-group td {
+                font-size: 13px;
+            }
+
+            .patient-group td::before {
+                content: none;
+            }
+
+            .actions {
+                width: 100%;
+                justify-content: flex-end;
+                flex-wrap: wrap;
+            }
+
+            .btn {
+                flex: 1 1 auto;
+            }
+
+            .comment {
+                width: 100%;
+            }
+        }
     </style>
 
     @if ($items->isEmpty())
@@ -193,7 +265,7 @@
                         $color = $patientPalette[abs((int) $patientId) % count($patientPalette)];
                     @endphp
                     <tr class="patient-group" style="--patient-color: {{ $color }};">
-                        <td colspan="7">{{ $patientName }} ({{ $patientAge }} / {{ $patientSex }})</td>
+                        <td colspan="7" data-label="">{{ $patientName }} ({{ $patientAge }} / {{ $patientSex }})</td>
                     </tr>
                     @foreach ($groupItems as $item)
                         @php
@@ -203,20 +275,20 @@
                             $resultText = $resultValue !== null && $resultValue !== '' ? $resultValue : 'Parameters';
                         @endphp
                         <tr>
-                            <td>{{ $item->specimen->specimen_no ?? '-' }}</td>
-                            <td>{{ $patientName }}</td>
-                            <td>{{ $item->testMaster->name ?? '-' }}</td>
-                            <td>{{ $resultText }}</td>
-                            <td>
+                            <td data-label="Specimen No">{{ $item->specimen->specimen_no ?? '-' }}</td>
+                            <td data-label="Patient">{{ $patientName }}</td>
+                            <td data-label="Test">{{ $item->testMaster->name ?? '-' }}</td>
+                            <td data-label="Result">{{ $resultText }}</td>
+                            <td data-label="Flag">
                                 <span class="status-badge {{ $flagClass }}">{{ $flag ?: 'NORMAL' }}</span>
                             </td>
-                            <td>
+                            <td data-label="Comment">
                                 <form method="post" action="{{ route('results.validate.action') }}">
                                     @csrf
                                     <input type="hidden" name="specimen_test_id" value="{{ $item->id }}">
                                     <input class="comment" type="text" name="comment" placeholder="Validation note">
                             </td>
-                            <td>
+                            <td data-label="Action">
                                     <div class="actions">
                                         <a class="btn secondary" href="{{ route('reports.show', $item) }}" target="_blank" rel="noopener">View Report</a>
                                         <button class="btn" name="action" value="approve" type="submit">Validate</button>

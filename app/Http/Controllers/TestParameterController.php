@@ -6,6 +6,8 @@ use App\Models\TestMaster;
 use App\Models\TestParameter;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -32,6 +34,10 @@ class TestParameterController extends Controller
             'symbol' => ['nullable', 'string', 'max:50'],
             'unit' => ['nullable', 'string', 'max:50'],
             'reference_range' => ['nullable', 'string', 'max:100'],
+            'reference_image' => ['nullable', 'image', 'max:5120'],
+            'reference_image_clear' => ['nullable', 'boolean'],
+            'reference_image_width' => ['nullable', 'integer', 'min:20', 'max:800'],
+            'reference_image_height' => ['nullable', 'integer', 'min:20', 'max:800'],
             'remarks' => ['nullable', 'string', 'max:255'],
             'sort_order' => ['nullable', 'integer', 'min:0'],
             'is_active' => ['nullable', 'boolean'],
@@ -43,7 +49,7 @@ class TestParameterController extends Controller
             'text_color' => ['nullable', 'string', 'max:20'],
             'result_column' => ['nullable', 'integer', 'min:1', 'max:2'],
             'group_label' => ['nullable', 'string', 'max:100'],
-            'display_type' => ['nullable', Rule::in(['label', 'text', 'number', 'textbox', 'dropdown'])],
+            'display_type' => ['nullable', Rule::in(['label', 'text', 'number', 'textbox', 'dropdown', 'image'])],
             'font_size' => ['nullable', 'integer', 'min:8', 'max:48'],
             'dropdown_options' => ['nullable', 'string', 'max:1000'],
         ]);
@@ -53,6 +59,8 @@ class TestParameterController extends Controller
             'symbol' => $data['symbol'] ?? null,
             'unit' => $data['unit'] ?? null,
             'reference_range' => $data['reference_range'] ?? null,
+            'reference_image_width' => $data['reference_image_width'] ?? null,
+            'reference_image_height' => $data['reference_image_height'] ?? null,
             'remarks' => $data['remarks'] ?? null,
             'sort_order' => $data['sort_order'] ?? 0,
             'is_active' => (bool) ($data['is_active'] ?? false),
@@ -69,10 +77,32 @@ class TestParameterController extends Controller
             'dropdown_options' => $this->parseDropdownOptions($data['dropdown_options'] ?? null),
         ];
 
+        $referenceImagePath = null;
+        if ($request->hasFile('reference_image')) {
+            $file = $request->file('reference_image');
+            $extension = $file->getClientOriginalExtension() ?: 'jpg';
+            $nameSlug = Str::slug($data['name'] ?? 'parameter');
+            $fileName = $nameSlug . '-' . Str::random(8) . '.' . $extension;
+            $referenceImagePath = $file->storeAs('test-parameter-references/' . $test->id, $fileName, 'public');
+        }
+
         if (!empty($data['parameter_id'])) {
             $parameter = $test->parameters()->whereKey($data['parameter_id'])->firstOrFail();
+            if (!empty($data['reference_image_clear']) && $parameter->reference_image_path) {
+                Storage::disk('public')->delete($parameter->reference_image_path);
+                $payload['reference_image_path'] = null;
+            }
+            if ($referenceImagePath !== null) {
+                if ($parameter->reference_image_path) {
+                    Storage::disk('public')->delete($parameter->reference_image_path);
+                }
+                $payload['reference_image_path'] = $referenceImagePath;
+            }
             $parameter->update($payload);
         } else {
+            if ($referenceImagePath !== null) {
+                $payload['reference_image_path'] = $referenceImagePath;
+            }
             $test->parameters()->create($payload);
         }
 
@@ -92,6 +122,10 @@ class TestParameterController extends Controller
             'symbol' => ['nullable', 'string', 'max:50'],
             'unit' => ['nullable', 'string', 'max:50'],
             'reference_range' => ['nullable', 'string', 'max:100'],
+            'reference_image' => ['nullable', 'image', 'max:5120'],
+            'reference_image_clear' => ['nullable', 'boolean'],
+            'reference_image_width' => ['nullable', 'integer', 'min:20', 'max:800'],
+            'reference_image_height' => ['nullable', 'integer', 'min:20', 'max:800'],
             'remarks' => ['nullable', 'string', 'max:255'],
             'sort_order' => ['nullable', 'integer', 'min:0'],
             'is_active' => ['nullable', 'boolean'],
@@ -103,16 +137,18 @@ class TestParameterController extends Controller
             'text_color' => ['nullable', 'string', 'max:20'],
             'result_column' => ['nullable', 'integer', 'min:1', 'max:2'],
             'group_label' => ['nullable', 'string', 'max:100'],
-            'display_type' => ['nullable', Rule::in(['label', 'text', 'number', 'textbox', 'dropdown'])],
+            'display_type' => ['nullable', Rule::in(['label', 'text', 'number', 'textbox', 'dropdown', 'image'])],
             'font_size' => ['nullable', 'integer', 'min:8', 'max:48'],
             'dropdown_options' => ['nullable', 'string', 'max:1000'],
         ]);
 
-        $parameter->update([
+        $updatePayload = [
             'name' => $data['name'],
             'symbol' => $data['symbol'] ?? null,
             'unit' => $data['unit'] ?? null,
             'reference_range' => $data['reference_range'] ?? null,
+            'reference_image_width' => $data['reference_image_width'] ?? null,
+            'reference_image_height' => $data['reference_image_height'] ?? null,
             'remarks' => $data['remarks'] ?? null,
             'sort_order' => $data['sort_order'] ?? 0,
             'is_active' => (bool) ($data['is_active'] ?? false),
@@ -127,7 +163,28 @@ class TestParameterController extends Controller
             'display_type' => $data['display_type'] ?? $parameter->display_type,
             'font_size' => $data['font_size'] ?? $parameter->font_size,
             'dropdown_options' => $this->parseDropdownOptions($data['dropdown_options'] ?? null),
-        ]);
+        ];
+
+        if (!empty($data['reference_image_clear'])) {
+            if ($parameter->reference_image_path) {
+                Storage::disk('public')->delete($parameter->reference_image_path);
+            }
+            $updatePayload['reference_image_path'] = null;
+        }
+
+        if ($request->hasFile('reference_image')) {
+            $file = $request->file('reference_image');
+            $extension = $file->getClientOriginalExtension() ?: 'jpg';
+            $nameSlug = Str::slug($data['name'] ?? 'parameter');
+            $fileName = $nameSlug . '-' . Str::random(8) . '.' . $extension;
+            $referenceImagePath = $file->storeAs('test-parameter-references/' . $test->id, $fileName, 'public');
+            if ($parameter->reference_image_path) {
+                Storage::disk('public')->delete($parameter->reference_image_path);
+            }
+            $updatePayload['reference_image_path'] = $referenceImagePath;
+        }
+
+        $parameter->update($updatePayload);
 
         return redirect()->route('tests.parameters', $test);
     }

@@ -847,6 +847,14 @@
                 <h3>SMS Settings</h3>
                 <p style="font-size:11px;color:var(--muted);margin-bottom:8px;">Each lab can supply its own gateway credentials, and super admins can also set lab-specific defaults. Values are stored per lab (lab_id), so you can keep them unique for Check Life Laboratory or any other center.</p>
                 <div class="field">
+                    <label>SMS Enabled (Default)</label>
+                    <div style="display:flex;gap:8px;align-items:center;">
+                        <input type="hidden" name="sms_enabled" value="0">
+                        <input type="checkbox" name="sms_enabled" value="1" {{ ($settings['sms_enabled'] ?? '1') === '1' ? 'checked' : '' }}>
+                        <span style="font-size:12px;color:var(--muted);">Enable SMS sending for this lab by default.</span>
+                    </div>
+                </div>
+                <div class="field">
                     <label>SMS API (HTTP) Endpoint (Gateway URL)</label>
                     <input name="sms_gateway_url" type="text" value="{{ $settings['sms_gateway_url'] ?? '' }}" placeholder="https://sms-provider/api/send">
                 </div>
@@ -868,9 +876,19 @@
                     <div style="font-size:11px;color:var(--muted);">Provide the numeric or alphanumeric sender ID your SMS provider assigned to this lab (Check Life Laboratory’s number is 0756510060, but each lab can save its own).</div>
                 </div>
                 <div class="field">
-                    <label>Default SMS Template</label>
+                    <label>Invoice SMS Template</label>
                     <textarea name="sms_template_billing" rows="4" placeholder="Dear {patient_name}, {lab_name} invoice {invoice_no} amount {amount}.">{{ $settings['sms_template_billing'] ?? 'Dear {patient_name}, {lab_name} invoice {invoice_no} amount {amount}.' }}</textarea>
-                    <div style="font-size:11px;color:var(--muted);">Billing and report-ready messages share this template by default; report SMS will fall back to it when no dedicated template exists. Placeholders: {patient_name}, {lab_name}, {specimen_no}, {invoice_no}, {amount}, {report_link}.</div>
+                    <div style="font-size:11px;color:var(--muted);">Used for billing SMS. Placeholders: {patient_name}, {lab_name}, {specimen_no}, {invoice_no}, {amount}, {invoice_link}.</div>
+                    <div class="field" style="margin-top:10px;">
+                        <label>Report Ready SMS Template (No Link)</label>
+                        <textarea name="sms_template_report_ready" rows="4" placeholder="Hi {patient_name}, your report is ready.">{{ $settings['sms_template_report_ready'] ?? '' }}</textarea>
+                        <div style="font-size:11px;color:var(--muted);">Used for “Report Ready” SMS without link. Placeholders: {patient_name}, {lab_name}, {specimen_no}, {invoice_no}, {amount}.</div>
+                    </div>
+                    <div class="field" style="margin-top:10px;">
+                        <label>Report Link SMS Template (With Link)</label>
+                        <textarea name="sms_template_report_link" rows="4" placeholder="Hi {patient_name}, your report is ready: {report_link}">{{ $settings['sms_template_report_link'] ?? '' }}</textarea>
+                        <div style="font-size:11px;color:var(--muted);">Used for “Report Link” SMS. Placeholders: {patient_name}, {lab_name}, {specimen_no}, {invoice_no}, {amount}, {report_link}.</div>
+                    </div>
                 </div>
                 <div class="section-actions">
                     <button class="btn section-save" type="submit" data-section="comm">Save</button>

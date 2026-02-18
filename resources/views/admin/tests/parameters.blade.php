@@ -7,6 +7,7 @@
         'text' => 'Text',
         'number' => 'Number',
         'dropdown' => 'Dropdown',
+        'image' => 'Picture Box',
         'label' => 'Label',
     ];
 @endphp
@@ -97,6 +98,15 @@
             font-size: 12px;
         }
 
+        .ref-image-preview {
+            width: 80px;
+            height: 60px;
+            border: 1px solid var(--line);
+            border-radius: 6px;
+            object-fit: cover;
+            display: block;
+        }
+
         .btn-small {
             padding: 6px 10px;
             font-size: 12px;
@@ -114,7 +124,7 @@
             <h2>{{ $test->name }} ({{ $test->code }})</h2>
             <a class="btn-small" href="{{ route('tests.index') }}" style="text-decoration:none;">Back to Tests</a>
         </div>
-        <form method="post" action="{{ route('tests.parameters.store', $test) }}">
+        <form method="post" action="{{ route('tests.parameters.store', $test) }}" enctype="multipart/form-data">
             @csrf
             <div class="form-grid">
                 <div>
@@ -212,7 +222,7 @@
             <h2 style="margin-bottom:0;">Label (Static text)</h2>
         </div>
         <p style="font-size:13px;color:#4b5563;margin-top:0;">Use this form to add a label/description row. The label will render under “Display Type” and only stores text-related styling.</p>
-        <form method="post" action="{{ route('tests.parameters.store', $test) }}">
+        <form method="post" action="{{ route('tests.parameters.store', $test) }}" enctype="multipart/form-data">
             @csrf
             <input type="hidden" name="display_type" value="label">
             <div class="form-grid">
@@ -223,6 +233,18 @@
                 <div class="span-2">
                     <label>Label Text</label>
                     <textarea name="remarks" rows="3" placeholder="Enter the static text that will appear on the report"></textarea>
+                </div>
+                <div>
+                    <label>Label Image (Reference)</label>
+                    <input name="reference_image" type="file" accept="image/*">
+                </div>
+                <div>
+                    <label>Image Width (px)</label>
+                    <input name="reference_image_width" type="number" min="20" max="800" placeholder="e.g. 180">
+                </div>
+                <div>
+                    <label>Image Height (px)</label>
+                    <input name="reference_image_height" type="number" min="20" max="800" placeholder="e.g. 140">
                 </div>
                 <div>
                     <label>Font Size (px)</label>
@@ -273,7 +295,7 @@
     <div class="card table-wrap">
         <div style="display:none;">
             @foreach ($test->parameters as $parameter)
-                <form id="param-form-{{ $parameter->id }}" method="post" action="{{ route('tests.parameters.store', $test) }}">
+                <form id="param-form-{{ $parameter->id }}" method="post" action="{{ route('tests.parameters.store', $test) }}" enctype="multipart/form-data">
                     @csrf
                     <input type="hidden" name="parameter_id" value="{{ $parameter->id }}">
                 </form>
@@ -296,6 +318,8 @@
                     <th>Sort</th>
                     <th>Column</th>
                     <th>Group Label</th>
+                    <th>Img W</th>
+                    <th>Img H</th>
                     <th>Visible</th>
                     <th>Bold</th>
                     <th>Underline</th>
@@ -336,6 +360,8 @@
                             </select>
                         </td>
                         <td><input class="row-input" name="group_label" value="{{ $parameter->group_label }}" form="{{ $formId }}"></td>
+                        <td><input class="row-input" name="reference_image_width" type="number" min="20" max="800" value="{{ $parameter->reference_image_width }}" form="{{ $formId }}"></td>
+                        <td><input class="row-input" name="reference_image_height" type="number" min="20" max="800" value="{{ $parameter->reference_image_height }}" form="{{ $formId }}"></td>
                         <td>
                             <label style="display:flex;align-items:center;gap:6px;">
                                 <input type="checkbox" name="is_visible" value="1" {{ $parameter->is_visible ? 'checked' : '' }} form="{{ $formId }}">
@@ -381,7 +407,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="19">No parameters added.</td>
+                        <td colspan="21">No parameters added.</td>
                     </tr>
                 @endforelse
             </tbody>

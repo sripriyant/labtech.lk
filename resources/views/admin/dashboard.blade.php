@@ -183,6 +183,10 @@
             overflow: hidden;
         }
 
+        .action-card::before {
+            content: none;
+        }
+
         .action-card:hover {
             transform: translateY(-2px);
             box-shadow: 0 12px 20px rgba(15, 23, 42, 0.08);

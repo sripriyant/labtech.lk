@@ -658,12 +658,14 @@ class BillingController extends Controller
             $redirect->with('open_invoice_url', $openInvoiceUrl);
         }
         if ($sendBillingSms) {
+            $invoiceLink = $specimenId ? url()->route('invoice.show', ['specimen' => $specimenId]) : '';
             $smsResult = $this->sendBillingSms($patientPhone, [
                 'patient_name' => $patientName ?? 'Patient',
                 'specimen_no' => $specimenNo ?? '',
                 'invoice_no' => $invoiceNo ?? '',
                 'amount' => $netTotal !== null ? number_format((float) $netTotal, 2, '.', '') : '',
                 'report_link' => '',
+                'invoice_link' => $invoiceLink,
             ]);
             if (!$smsResult['ok']) {
                 $redirect->with('sms_error', $smsResult['error'] ?? 'Failed to send SMS.');
@@ -830,6 +832,19 @@ class BillingController extends Controller
         ]);
     }
 
+    public function publicInvoice(Specimen $specimen): View
+    {
+        $specimen->load(['patient', 'center', 'products.product', 'tests.testMaster', 'invoice']);
+
+        if (!$specimen->invoice_id) {
+            abort(404);
+        }
+
+        return view('billing.print', [
+            'specimen' => $specimen,
+        ]);
+    }
+
     public function printList(Request $request): View
     {
         $this->requirePermission('billing.access');
@@ -934,7 +949,7 @@ class BillingController extends Controller
         }
         $settings = Setting::valuesForLab((int) $labId);
 
-        if (($settings['sms_enabled'] ?? '0') !== '1') {
+        if (($settings['sms_enabled'] ?? '1') !== '1') {
             return ['ok' => false, 'error' => 'SMS is disabled for this lab.'];
         }
 

@@ -261,11 +261,41 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
+            gap: 12px;
         }
 
         .title {
             font-size: 24px;
             font-weight: 700;
+        }
+
+        .sidebar-toggle {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            border: 1px solid var(--line);
+            background: #fff;
+            color: var(--ink);
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .sidebar-toggle svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .sidebar-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.4);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s ease, visibility 0.2s ease;
+            z-index: 4;
         }
 
         .user {
@@ -313,13 +343,7 @@
         .filter-card::before,
         .table-card::before,
         .table-wrap::before {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 6px;
-            background: #0f3d75;
+            content: none;
         }
 
         @media (max-width: 900px) {
@@ -328,19 +352,35 @@
             }
 
             .sidebar {
-                flex-direction: row;
-                align-items: center;
-                justify-content: space-between;
-                padding: 16px;
+                position: fixed;
+                left: 0;
+                top: 0;
+                height: 100vh;
+                width: 260px;
+                transform: translateX(-110%);
+                transition: transform 0.2s ease;
+                z-index: 5;
             }
 
-            .nav {
-                grid-auto-flow: column;
-                overflow-x: auto;
+            body.sidebar-open .sidebar {
+                transform: translateX(0);
             }
 
             .lab-list {
                 display: none;
+            }
+
+            .content {
+                padding: 18px 16px 28px;
+            }
+
+            .sidebar-toggle {
+                display: inline-flex;
+            }
+
+            body.sidebar-open .sidebar-overlay {
+                opacity: 1;
+                visibility: visible;
             }
         }
     </style>
@@ -667,7 +707,7 @@
         }
     </style>
     <div class="shell">
-        <aside class="sidebar">
+        <aside class="sidebar" id="sidebar">
             <div class="brand">
                 @if (!empty($labLogoPath))
                     <div class="brand-logo">
@@ -941,9 +981,17 @@
                 </div>
             @endif
         </aside>
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
         <main class="content">
             <div class="topbar">
+                <button class="sidebar-toggle" type="button" id="sidebarToggle" aria-label="Toggle menu">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                </button>
                 <div class="title">{{ $pageTitle ?? 'Dashboard' }}</div>
                 <div class="user">
                     <span>{{ auth()->user()->name ?? 'Guest' }}</span>
@@ -973,6 +1021,24 @@
                     }
                 });
             });
+
+            var toggle = document.getElementById('sidebarToggle');
+            var overlay = document.getElementById('sidebarOverlay');
+
+            function closeSidebar() {
+                document.body.classList.remove('sidebar-open');
+            }
+
+            if (toggle) {
+                toggle.addEventListener('click', function () {
+                    document.body.classList.toggle('sidebar-open');
+                });
+            }
+            if (overlay) {
+                overlay.addEventListener('click', function () {
+                    closeSidebar();
+                });
+            }
         })();
     </script>
 </body>

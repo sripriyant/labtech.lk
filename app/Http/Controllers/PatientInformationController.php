@@ -6,6 +6,7 @@ use App\Models\SpecimenTest;
 use App\Models\Patient;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -247,5 +248,63 @@ class PatientInformationController extends Controller
         return redirect()
             ->route('patient.information')
             ->with('status', 'Patient deleted.');
+    }
+
+    public function bulkDelete(Request $request): RedirectResponse
+    {
+        $this->requirePermission('admin.dashboard');
+
+        $ids = collect($request->input('patient_ids', []))
+            ->filter()
+            ->map(fn ($id) => (int) $id)
+            ->unique()
+            ->values()
+            ->all();
+
+        if (empty($ids)) {
+            return redirect()
+                ->route('patient.information')
+                ->with('status', 'No patients selected.');
+        }
+
+        $patients = Patient::query()->whereIn('id', $ids)->get();
+        $count = $patients->count();
+
+        foreach ($patients as $patient) {
+            $patient->delete();
+        }
+
+        return redirect()
+            ->route('patient.information')
+            ->with('status', $count . ' patient(s) deleted.');
+    }
+
+    public function deleteAll(Request $request): RedirectResponse
+    {
+        $this->requirePermission('admin.dashboard');
+
+        $confirm = trim((string) $request->input('confirm_text', ''));
+        if ($confirm !== 'DELETE') {
+            return redirect()
+                ->route('patient.information')
+                ->with('status', 'Delete all canceled.');
+        }
+
+        $total = Patient::count();
+        if ($total === 0) {
+            return redirect()
+                ->route('patient.information')
+                ->with('status', 'No patients to delete.');
+        }
+
+        Patient::query()->chunkById(200, function ($patients): void {
+            foreach ($patients as $patient) {
+                $patient->delete();
+            }
+        });
+
+        return redirect()
+            ->route('patient.information')
+            ->with('status', $total . ' patient(s) deleted.');
     }
 }

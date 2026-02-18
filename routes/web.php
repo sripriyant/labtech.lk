@@ -83,6 +83,8 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/admin/patient-information', [PatientInformationController::class, 'index'])->name('patient.information');
     Route::get('/admin/patient-information/{patient}/edit', [PatientInformationController::class, 'edit'])->name('patient.information.edit');
+    Route::post('/admin/patient-information/bulk-delete', [PatientInformationController::class, 'bulkDelete'])->name('patient.information.bulk_delete');
+    Route::post('/admin/patient-information/delete-all', [PatientInformationController::class, 'deleteAll'])->name('patient.information.delete_all');
     Route::post('/admin/patient-information/{patient}', [PatientInformationController::class, 'update'])->name('patient.information.update');
     Route::post('/admin/patient-information/{patient}/delete', [PatientInformationController::class, 'destroy'])->name('patient.information.destroy');
     Route::get('/admin/stock', [LabStockController::class, 'index'])->name('admin.stock.index');
@@ -147,6 +149,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/billing/products', [BillingController::class, 'searchProducts'])->name('billing.products');
     Route::get('/billing/patients', [BillingController::class, 'searchPatients'])->name('billing.patients');
     Route::get('/billing/specimen', [BillingController::class, 'findSpecimen'])->name('billing.specimen');
+    Route::post('/reports/{specimenTest}/sms', [ReportController::class, 'sendReportSms'])->name('reports.sms');
+    Route::post('/reports/{specimenTest}/sms-link', [ReportController::class, 'sendReportLinkSms'])->name('reports.sms.link');
+    Route::post('/reports/{specimenTest}/invoice-sms', [ReportController::class, 'sendInvoiceSms'])->name('reports.invoice.sms');
 });
 
 Route::get('/results/entry', [ResultEntryController::class, 'index'])->name('results.entry');
@@ -161,6 +166,7 @@ Route::get('/reports', [ReportController::class, 'index'])->name('reports.index'
 Route::get('/reports/latest', [ReportController::class, 'latest'])->name('reports.latest');
 Route::get('/reports/{specimenTest}', [ReportController::class, 'show'])->name('reports.show');
 Route::get('/reports/assets/{type}', [ReportController::class, 'asset'])->name('reports.asset');
+Route::get('/invoice/{specimen}', [BillingController::class, 'publicInvoice'])->name('invoice.show');
 Route::get('/track-report', [ReportController::class, 'track'])->name('reports.track');
 Route::post('/track-report', [ReportController::class, 'trackRequest'])->name('reports.track.request');
 Route::get('/track-report/verify', [ReportController::class, 'trackVerify'])->name('reports.track.verify');

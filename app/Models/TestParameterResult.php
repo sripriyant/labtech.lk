@@ -16,6 +16,7 @@ class TestParameterResult extends Model
         'reference_range',
         'flag',
         'remarks',
+        'image_path',
         'entered_by',
         'entered_at',
     ];

@@ -112,6 +112,10 @@
             border: 1px solid var(--line);
         }
 
+        .btn.danger {
+            background: #c0392b;
+        }
+
         .row-actions {
             display: flex;
             gap: 6px;
@@ -130,6 +134,31 @@
 
         .btn.link.danger {
             background: #c0392b;
+        }
+
+        .bulk-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 10px 20px rgba(15, 23, 42, 0.08);
+            margin-bottom: 10px;
+        }
+
+        .bulk-count {
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        th.select-col,
+        td.select-col {
+            width: 32px;
+        }
+
+        .select-all {
+            transform: translateY(1px);
         }
 
         @media (max-width: 1200px) {
@@ -236,10 +265,25 @@
         </form>
     </div>
 
+    <form id="bulkDeleteForm" method="post" action="{{ route('patient.information.bulk_delete') }}">
+        @csrf
+    </form>
+    <form id="deleteAllForm" method="post" action="{{ route('patient.information.delete_all') }}">
+        @csrf
+        <input type="hidden" name="confirm_text" id="deleteAllConfirmText" value="">
+    </form>
+
+    <div class="bulk-actions">
+        <button class="btn danger" id="bulkDeleteBtn" type="submit" form="bulkDeleteForm" disabled>Delete Selected</button>
+        <button class="btn danger" id="deleteAllBtn" type="submit" form="deleteAllForm">Delete All</button>
+        <span class="bulk-count" id="bulkCount">0 selected</span>
+    </div>
+
     <div class="table-wrap">
         <table>
             <thead>
                 <tr>
+                    <th class="select-col"><input class="select-all" type="checkbox" id="selectAllPatients"></th>
                     <th>UHID</th>
                     <th>Patient Name</th>
                     <th>NIC</th>
@@ -266,6 +310,14 @@
                         $waLink = $phoneDigits ? 'https://wa.me/' . $phoneDigits : null;
                     @endphp
                     <tr>
+                        <td class="select-col">
+                            <input type="checkbox"
+                                   class="patient-checkbox"
+                                   name="patient_ids[]"
+                                   form="bulkDeleteForm"
+                                   value="{{ $patient?->id }}"
+                                   {{ $patient?->id ? '' : 'disabled' }}>
+                        </td>
                         <td>{{ $patient?->uhid ?? '-' }}</td>
                         <td>{{ $patient?->name ?? '-' }}</td>
                         <td>{{ $patient?->nic ?? '-' }}</td>
@@ -296,10 +348,77 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="13">No patients found.</td>
+                        <td colspan="14">No patients found.</td>
                     </tr>
                 @endforelse
             </tbody>
         </table>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var selectAll = document.getElementById('selectAllPatients');
+            var checkboxes = Array.prototype.slice.call(document.querySelectorAll('.patient-checkbox'));
+            var bulkCount = document.getElementById('bulkCount');
+            var bulkDeleteBtn = document.getElementById('bulkDeleteBtn');
+            var bulkForm = document.getElementById('bulkDeleteForm');
+            var deleteAllForm = document.getElementById('deleteAllForm');
+            var deleteAllBtn = document.getElementById('deleteAllBtn');
+            var deleteAllConfirmText = document.getElementById('deleteAllConfirmText');
+
+            function enabledCheckboxes() {
+                return checkboxes.filter(function (box) { return !box.disabled; });
+            }
+
+            function updateBulkState() {
+                var enabled = enabledCheckboxes();
+                var selected = enabled.filter(function (box) { return box.checked; });
+                var total = enabled.length;
+                bulkCount.textContent = selected.length + ' selected';
+                bulkDeleteBtn.disabled = selected.length === 0;
+                if (selectAll) {
+                    selectAll.checked = total > 0 && selected.length === total;
+                    selectAll.indeterminate = selected.length > 0 && selected.length < total;
+                }
+            }
+
+            if (selectAll) {
+                selectAll.addEventListener('change', function () {
+                    enabledCheckboxes().forEach(function (box) {
+                        box.checked = selectAll.checked;
+                    });
+                    updateBulkState();
+                });
+            }
+
+            checkboxes.forEach(function (box) {
+                box.addEventListener('change', updateBulkState);
+            });
+
+            if (bulkForm) {
+                bulkForm.addEventListener('submit', function (event) {
+                    if (bulkDeleteBtn.disabled) {
+                        event.preventDefault();
+                        return;
+                    }
+                    if (!confirm('Delete selected patients and all related specimens?')) {
+                        event.preventDefault();
+                    }
+                });
+            }
+
+            if (deleteAllForm && deleteAllBtn && deleteAllConfirmText) {
+                deleteAllForm.addEventListener('submit', function (event) {
+                    var input = prompt('Type DELETE to remove ALL patients and related data.');
+                    if (input !== 'DELETE') {
+                        event.preventDefault();
+                        return;
+                    }
+                    deleteAllConfirmText.value = input;
+                });
+            }
+
+            updateBulkState();
+        });
+    </script>
 @endsection

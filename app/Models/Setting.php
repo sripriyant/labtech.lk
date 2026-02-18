@@ -17,19 +17,39 @@ class Setting extends Model
     {
         $query = self::query();
         if (!Schema::hasColumn('settings', 'lab_id')) {
-            return $query->pluck('value', 'key')->all();
+            return $query
+                ->orderBy('updated_at', 'desc')
+                ->orderBy('id', 'desc')
+                ->get()
+                ->groupBy('key')
+                ->map(function ($group) {
+                    return $group->first()->value;
+                })
+                ->toArray();
         }
 
         $global = self::query()
             ->whereNull('lab_id')
-            ->pluck('value', 'key')
+            ->orderBy('updated_at', 'desc')
+            ->orderBy('id', 'desc')
+            ->get()
+            ->groupBy('key')
+            ->map(function ($group) {
+                return $group->first()->value;
+            })
             ->toArray();
 
         $lab = [];
         if ($labId > 0) {
             $lab = self::query()
                 ->where('lab_id', $labId)
-                ->pluck('value', 'key')
+                ->orderBy('updated_at', 'desc')
+                ->orderBy('id', 'desc')
+                ->get()
+                ->groupBy('key')
+                ->map(function ($group) {
+                    return $group->first()->value;
+                })
                 ->toArray();
         }
 

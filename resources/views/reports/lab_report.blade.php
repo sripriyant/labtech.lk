@@ -969,10 +969,27 @@
         <div class="report-title" style="display:none;"></div>
 
         @php
-            $invoiceDate = optional($specimenTest->specimen?->created_at)->format('Y-m-d');
-            $invoiceTime = optional($specimenTest->specimen?->created_at)->format('H:i');
-            $collectDate = optional($specimenTest->specimen?->collected_at)->format('Y-m-d');
-            $collectTime = optional($specimenTest->specimen?->collected_at)->format('H:i:s');
+            $invoiceAt = $specimenTest->specimen?->created_at;
+            $collectAt = $specimenTest->specimen?->collected_at ?? $invoiceAt;
+            $invoiceDate = optional($invoiceAt)->format('Y-m-d');
+            $invoiceTime = optional($invoiceAt)->format('H:i');
+            $collectDate = optional($collectAt)->format('Y-m-d');
+            $collectTime = optional($collectAt)->format('H:i');
+            $specimenType = trim((string) ($specimenTest->testMaster?->sample_type ?? ''));
+            $referredByLabel = trim((string) ($referredBy ?? ''));
+            $resolveResultImage = function (?string $path) use ($downloadMode) {
+                if (!$path) {
+                    return null;
+                }
+                $path = ltrim($path, '/');
+                $filePath = storage_path('app/public/' . $path);
+                if ($downloadMode && is_file($filePath)) {
+                    $mime = mime_content_type($filePath) ?: 'image/png';
+                    $data = base64_encode(file_get_contents($filePath));
+                    return 'data:' . $mime . ';base64,' . $data;
+                }
+                return \Illuminate\Support\Facades\Storage::url($path);
+            };
         @endphp
 
         @if (!empty($pdfMode))
@@ -995,9 +1012,13 @@
                                 <tbody>
                                     <tr><td style="width:130px;">Age / Gender</td><td style="width:14px;">:</td><td>{{ $age ?? '-' }}{{ $patient?->sex ? ' / ' . $patient->sex : '' }}</td></tr>
                                     <tr><td>Invoice Date</td><td>:</td><td>{{ $invoiceDate ?? '-' }} {{ $invoiceTime ? 'Time : ' . $invoiceTime : '' }}</td></tr>
-                                    <tr><td>Specimen Type</td><td>:</td><td>{{ $specimenTest->testMaster?->sample_type ?? '-' }}</td></tr>
+                                    @if ($specimenType !== '')
+                                        <tr><td>Specimen Type</td><td>:</td><td>{{ $specimenType }}</td></tr>
+                                    @endif
                                     <tr><td>Specimen Collect Date</td><td>:</td><td>{{ $collectDate ?? '-' }} {{ $collectTime ? 'Time : ' . $collectTime : '' }}</td></tr>
-                                    <tr><td>Referred By</td><td>:</td><td>{{ $referredBy ?? '-' }}</td></tr>
+                                    @if ($referredByLabel !== '')
+                                        <tr><td>Referred By</td><td>:</td><td>{{ $referredByLabel }}</td></tr>
+                                    @endif
                                 </tbody>
                             </table>
                         </td>
@@ -1016,9 +1037,13 @@
                 <div class="info-block">
                     <div class="info-row"><div>Age / Gender</div><div>:</div><div>{{ $age ?? '-' }}{{ $patient?->sex ? ' / ' . $patient->sex : '' }}</div></div>
                     <div class="info-row"><div>Invoice Date</div><div>:</div><div>{{ $invoiceDate ?? '-' }} {{ $invoiceTime ? 'Time : ' . $invoiceTime : '' }}</div></div>
-                    <div class="info-row"><div>Specimen Type</div><div>:</div><div>{{ $specimenTest->testMaster?->sample_type ?? '-' }}</div></div>
+                    @if ($specimenType !== '')
+                        <div class="info-row"><div>Specimen Type</div><div>:</div><div>{{ $specimenType }}</div></div>
+                    @endif
                     <div class="info-row"><div>Specimen Collect Date</div><div>:</div><div>{{ $collectDate ?? '-' }} {{ $collectTime ? 'Time : ' . $collectTime : '' }}</div></div>
-                    <div class="info-row"><div>Referred By</div><div>:</div><div>{{ $referredBy ?? '-' }}</div></div>
+                    @if ($referredByLabel !== '')
+                        <div class="info-row"><div>Referred By</div><div>:</div><div>{{ $referredByLabel }}</div></div>
+                    @endif
                 </div>
             </div>
         @endif
@@ -1073,8 +1098,21 @@
                                 $labelText = ($parameter->remarks ?? '') !== '' ? $parameter->remarks : $parameter->name;
                             @endphp
                             @if ($isLabel)
+                                @php
+                                    $labelImageSrc = $resolveResultImage($parameter->reference_image_path ?? null);
+                                    $labelMaxWidth = !empty($parameter->reference_image_width) ? $parameter->reference_image_width : 180;
+                                    $labelMaxHeight = !empty($parameter->reference_image_height) ? $parameter->reference_image_height : 140;
+                                    $labelImageStyle = 'max-width:' . $labelMaxWidth . 'px;max-height:' . $labelMaxHeight . 'px;';
+                                @endphp
                                 <tr style="font-size: {{ $parameter->font_size ?? 12 }}px;color: {{ $parameter->text_color ?? '#000' }};font-weight: {{ $parameter->is_bold ? '700' : '400' }};text-decoration: {{ $parameter->is_underline ? 'underline' : 'none' }};font-style: {{ $parameter->is_italic ? 'italic' : 'normal' }};">
-                                    <td colspan="{{ $colspan }}" style="white-space: pre-wrap;">{!! nl2br(e($labelText)) !!}</td>
+                                    <td colspan="{{ $colspan }}" style="white-space: pre-wrap;">
+                                        {!! nl2br(e($labelText)) !!}
+                                        @if ($labelImageSrc)
+                                            <div style="margin-top:4px;">
+                                                <img src="{{ $labelImageSrc }}" alt="Label reference image" style="{{ $labelImageStyle }}border:1px solid #d1d5db;padding:2px;border-radius:4px;object-fit:contain;">
+                                            </div>
+                                        @endif
+                                    </td>
                                 </tr>
                                 @continue
                             @endif
@@ -1108,9 +1146,20 @@
                             @endif
                             <tr style="{{ $rowStyleText }}">
                                 <td>{{ $parameter->name }}</td>
-                                <td><span class="result-value">{{ $result?->result_value ?? '-' }}</span></td>
-                                <td>{{ $result?->unit ?? $parameter->unit ?? '-' }}</td>
-                                <td>{{ $result?->reference_range ?? $parameter->reference_range ?? '-' }}</td>
+                                @php
+                                    $imageSrc = ($parameter->display_type ?? '') === 'image'
+                                        ? $resolveResultImage($result?->image_path ?? null)
+                                        : null;
+                                @endphp
+                                <td>
+                                    @if ($imageSrc)
+                                        <img src="{{ $imageSrc }}" alt="Result image" style="max-width:160px;max-height:120px;border:1px solid #d1d5db;padding:2px;border-radius:4px;object-fit:contain;">
+                                    @else
+                                        <span class="result-value">{{ $result?->result_value ?? '-' }}</span>
+                                    @endif
+                                </td>
+                                <td>{{ $imageSrc ? '-' : ($result?->unit ?? $parameter->unit ?? '-') }}</td>
+                                <td>{{ $imageSrc ? '-' : ($result?->reference_range ?? $parameter->reference_range ?? '-') }}</td>
                                 @if ($hasInterpretation)
                                     <td>{{ $interpret }}</td>
                                 @endif
@@ -1151,8 +1200,21 @@
                                 $labelText = ($parameter->remarks ?? '') !== '' ? $parameter->remarks : $parameter->name;
                             @endphp
                             @if ($isLabel)
+                                @php
+                                    $labelImageSrc = $resolveResultImage($parameter->reference_image_path ?? null);
+                                    $labelMaxWidth = !empty($parameter->reference_image_width) ? $parameter->reference_image_width : 180;
+                                    $labelMaxHeight = !empty($parameter->reference_image_height) ? $parameter->reference_image_height : 140;
+                                    $labelImageStyle = 'max-width:' . $labelMaxWidth . 'px;max-height:' . $labelMaxHeight . 'px;';
+                                @endphp
                                 <tr style="font-size: {{ $parameter->font_size ?? 12 }}px;color: {{ $parameter->text_color ?? '#000' }};font-weight: {{ $parameter->is_bold ? '700' : '400' }};text-decoration: {{ $parameter->is_underline ? 'underline' : 'none' }};font-style: {{ $parameter->is_italic ? 'italic' : 'normal' }};">
-                                    <td colspan="{{ $colspan }}" style="white-space: pre-wrap;">{!! nl2br(e($labelText)) !!}</td>
+                                    <td colspan="{{ $colspan }}" style="white-space: pre-wrap;">
+                                        {!! nl2br(e($labelText)) !!}
+                                        @if ($labelImageSrc)
+                                            <div style="margin-top:4px;">
+                                                <img src="{{ $labelImageSrc }}" alt="Label reference image" style="{{ $labelImageStyle }}border:1px solid #d1d5db;padding:2px;border-radius:4px;object-fit:contain;">
+                                            </div>
+                                        @endif
+                                    </td>
                                 </tr>
                                 @continue
                             @endif
@@ -1186,9 +1248,20 @@
                                 @endif
                                 <tr style="{{ $rowStyleText }}">
                                     <td>{{ $parameter->name }}</td>
-                                    <td><span class="result-value">{{ $result?->result_value ?? '-' }}</span></td>
-                                    <td>{{ $result?->unit ?? $parameter->unit ?? '-' }}</td>
-                                    <td>{{ $result?->reference_range ?? $parameter->reference_range ?? '-' }}</td>
+                                    @php
+                                        $imageSrc = ($parameter->display_type ?? '') === 'image'
+                                            ? $resolveResultImage($result?->image_path ?? null)
+                                            : null;
+                                    @endphp
+                                    <td>
+                                        @if ($imageSrc)
+                                            <img src="{{ $imageSrc }}" alt="Result image" style="max-width:160px;max-height:120px;border:1px solid #d1d5db;padding:2px;border-radius:4px;object-fit:contain;">
+                                        @else
+                                            <span class="result-value">{{ $result?->result_value ?? '-' }}</span>
+                                        @endif
+                                    </td>
+                                    <td>{{ $imageSrc ? '-' : ($result?->unit ?? $parameter->unit ?? '-') }}</td>
+                                    <td>{{ $imageSrc ? '-' : ($result?->reference_range ?? $parameter->reference_range ?? '-') }}</td>
                                     @if ($hasInterpretation)
                                         <td class="result-interpretation-cell" data-parameter="{{ $parameter->code ?? '' }}">
                                             @if (!$isBloodGroupAbo)

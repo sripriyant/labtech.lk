@@ -6,10 +6,7 @@
     <title>labtech.lk | Laboratory Information System</title>
 
     <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=outfit:300,400,500,600,700,800|dm-serif-display:400" rel="stylesheet" />
-    <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
-    <link rel="icon" type="image/png" sizes="512x512" href="{{ asset('images/logo.png') }}">
-    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('images/logo.png') }}">
+    <link href="https://fonts.bunny.net/css->family=outfit:300,400,500,600,700,800|dm-serif-display:400" rel="stylesheet" />
 
     <style>
         :root {
@@ -85,11 +82,11 @@
         }
 
         .logo-img {
-            width: 156px;
-            height: 156px;
-            border-radius: 54px;
+            width: 52px;
+            height: 52px;
+            border-radius: 18px;
             background: #fff;
-            padding: 24px;
+            padding: 8px;
             box-shadow: 0 18px 32px rgba(6, 54, 71, 0.15);
             object-fit: contain;
         }
@@ -155,7 +152,7 @@
         }
 
         .btn.accent {
-            background: linear-gradient(135deg, var(--brand), var(--accent));
+            background: linear-gradient(135deg, #1d4ed8, #38bdf8);
             color: #fff;
             box-shadow: var(--shadow);
             border-color: transparent;
@@ -272,18 +269,18 @@
         .mini-card {
             border-radius: 10px;
             padding: 10px;
-            background: linear-gradient(140deg, var(--brand), var(--accent));
+            background: linear-gradient(140deg, #0b5a77, #2ec4b6);
             color: #fff;
             font-size: 11px;
             font-weight: 600;
         }
 
         .mini-card:nth-child(2) {
-            background: linear-gradient(140deg, var(--brand), var(--accent));
+            background: linear-gradient(140deg, #1d4ed8, #38bdf8);
         }
 
         .mini-card:nth-child(3) {
-            background: linear-gradient(140deg, var(--brand), var(--accent));
+            background: linear-gradient(140deg, #f97316, #facc15);
         }
 
         .pill-list.compact span {
@@ -340,19 +337,19 @@
             position: absolute;
             inset: 0;
             opacity: 0.12;
-            background: linear-gradient(135deg, var(--brand), var(--accent));
+            background: linear-gradient(135deg, #2ec4b6, #1d4ed8);
         }
 
         .stat-card:nth-child(2)::before {
-            background: linear-gradient(135deg, var(--brand), var(--accent));
+            background: linear-gradient(135deg, #f97316, #facc15);
         }
 
         .stat-card:nth-child(3)::before {
-            background: linear-gradient(135deg, var(--brand), var(--accent));
+            background: linear-gradient(135deg, #22c55e, #16a34a);
         }
 
         .stat-card:nth-child(4)::before {
-            background: linear-gradient(135deg, var(--brand), var(--accent));
+            background: linear-gradient(135deg, #8b5cf6, #ec4899);
         }
 
         .stat-card > * {
@@ -420,17 +417,7 @@
             font-size: 20px;
             color: #fff;
             margin-bottom: 12px;
-            background: linear-gradient(135deg, var(--brand), var(--accent));
-        }
-
-        .feature-icon svg,
-        .pill-icon svg,
-        .module-icon svg {
-            width: 22px;
-            height: 22px;
-            stroke: currentColor;
-            fill: none;
-            stroke-width: 2;
+            background: linear-gradient(135deg, #1d4ed8, #38bdf8);
         }
 
         .feature-card h4 {
@@ -438,15 +425,15 @@
         }
 
         .feature-card:nth-child(2) .feature-icon {
-            background: linear-gradient(135deg, var(--brand), var(--accent));
+            background: linear-gradient(135deg, #16a34a, #22c55e);
         }
 
         .feature-card:nth-child(3) .feature-icon {
-            background: linear-gradient(135deg, var(--brand), var(--accent));
+            background: linear-gradient(135deg, #f97316, #facc15);
         }
 
         .feature-card:nth-child(4) .feature-icon {
-            background: linear-gradient(135deg, var(--brand), var(--accent));
+            background: linear-gradient(135deg, #8b5cf6, #ec4899);
         }
 
         .why-section {
@@ -496,35 +483,35 @@
             place-items: center;
             font-size: 24px;
             color: #fff;
-            background: linear-gradient(135deg, var(--brand), var(--accent));
+            background: linear-gradient(135deg, #1d4ed8, #38bdf8);
         }
 
         .why-card:nth-child(2) .why-icon {
-            background: linear-gradient(135deg, var(--brand), var(--accent));
+            background: linear-gradient(135deg, #16a34a, #22c55e);
         }
 
         .why-card:nth-child(3) .why-icon {
-            background: linear-gradient(135deg, var(--brand), var(--accent));
+            background: linear-gradient(135deg, #f97316, #facc15);
         }
 
         .why-card:nth-child(4) .why-icon {
-            background: linear-gradient(135deg, var(--brand), var(--accent));
+            background: linear-gradient(135deg, #8b5cf6, #ec4899);
         }
 
         .why-card:nth-child(5) .why-icon {
-            background: linear-gradient(135deg, var(--brand), var(--accent));
+            background: linear-gradient(135deg, #0ea5e9, #14b8a6);
         }
 
         .why-card:nth-child(6) .why-icon {
-            background: linear-gradient(135deg, var(--brand), var(--accent));
+            background: linear-gradient(135deg, #ef4444, #f97316);
         }
 
         .why-card:nth-child(7) .why-icon {
-            background: linear-gradient(135deg, var(--brand), var(--accent));
+            background: linear-gradient(135deg, #6366f1, #a855f7);
         }
 
         .why-card:nth-child(8) .why-icon {
-            background: linear-gradient(135deg, var(--brand), var(--accent));
+            background: linear-gradient(135deg, #0f766e, #2dd4bf);
         }
 
         .why-card h4 {
@@ -566,16 +553,6 @@
             font-size: 14px;
         }
 
-        .demo-textarea {
-            min-height: 110px;
-            border-radius: 12px;
-            border: 1px solid #d6e3ea;
-            padding: 12px 14px;
-            background: #f7fbfd;
-            font-size: 14px;
-            resize: vertical;
-        }
-
         .demo-inline {
             display: grid;
             grid-template-columns: 90px 1fr;
@@ -588,8 +565,8 @@
             gap: 6px;
             padding: 4px 10px;
             border-radius: 999px;
-            background: rgba(11, 90, 119, 0.12);
-            color: var(--brand);
+            background: #e8f2ff;
+            color: #1d4ed8;
             font-weight: 700;
             font-size: 11px;
         }
@@ -598,33 +575,6 @@
             display: grid;
             gap: 12px;
             margin-top: 10px;
-        }
-
-        .demo-success {
-            margin-top: 14px;
-            background: #ecfdf5;
-            border: 1px solid #a7f3d0;
-            color: #065f46;
-            padding: 12px 14px;
-            border-radius: 12px;
-            font-weight: 600;
-            font-size: 13px;
-        }
-
-        .demo-error {
-            color: #dc2626;
-            font-size: 11px;
-        }
-
-        .demo-error-banner {
-            margin-top: 12px;
-            background: #fef2f2;
-            border: 1px solid #fecaca;
-            color: #b91c1c;
-            padding: 12px 14px;
-            border-radius: 12px;
-            font-weight: 600;
-            font-size: 13px;
         }
 
         .demo-check {
@@ -639,7 +589,7 @@
             height: 48px;
             border-radius: 14px;
             border: none;
-            background: var(--brand);
+            background: #1d4ed8;
             color: #fff;
             font-weight: 700;
             font-size: 14px;
@@ -648,7 +598,7 @@
         .demo-secondary {
             border: none;
             background: transparent;
-            color: var(--brand);
+            color: #1d4ed8;
             font-weight: 700;
             font-size: 13px;
             text-align: left;
@@ -669,110 +619,15 @@
             border: 1px solid #e1e9ef;
         }
 
-        .workflow-pills {
-            display: grid;
-            gap: 12px;
-            margin-top: 18px;
-        }
-
-        .workflow-pills .pill {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            padding: 12px 14px;
-            border-radius: 14px;
-            font-weight: 600;
-            color: var(--brand-deep);
-            box-shadow: 0 10px 20px rgba(15, 23, 42, 0.04);
-        }
-
-        .workflow-pills .pill-icon {
-            width: 32px;
-            height: 32px;
-            border-radius: 10px;
-            display: grid;
-            place-items: center;
-            background: linear-gradient(135deg, var(--brand), var(--accent));
-            color: #fff;
-            font-size: 14px;
-            flex-shrink: 0;
-        }
-
-        .workflow-panel {
-            background: #fff;
-            border: 1px solid var(--line);
-            border-radius: 20px;
-            padding: 22px;
-            box-shadow: var(--shadow);
-        }
-
-        .workflow-panel ul {
-            margin: 0;
-            padding: 0;
-            list-style: none;
-            display: grid;
-            gap: 12px;
-            color: var(--muted);
-        }
-
-        .workflow-panel li {
-            display: flex;
-            align-items: flex-start;
-            gap: 10px;
-        }
-
-        .workflow-panel li::before {
-            content: "✓";
-            color: var(--accent);
-            font-weight: 800;
-            margin-top: 2px;
-        }
-
-        .module-card {
-            background: #fff;
-            border: 1px solid var(--line);
-            border-radius: 18px;
-            padding: 22px;
-            box-shadow: 0 14px 30px rgba(15, 23, 42, 0.06);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .module-icon {
-            width: 46px;
-            height: 46px;
-            border-radius: 12px;
-            display: grid;
-            place-items: center;
-            font-size: 20px;
-            color: #fff;
-            margin-bottom: 12px;
-            background: linear-gradient(135deg, var(--brand), var(--accent));
-        }
-
-        .module-card:nth-child(2) .module-icon {
-            background: linear-gradient(135deg, var(--brand), var(--accent));
-        }
-
-        .module-card:nth-child(3) .module-icon {
-            background: linear-gradient(135deg, var(--brand), var(--accent));
-        }
-
-        .module-card:nth-child(4) .module-icon {
-            background: linear-gradient(135deg, var(--brand), var(--accent));
-        }
-
         .footer {
-            background: var(--brand-deep);
+            background: #0b1526;
             color: #dbe7f4;
             padding: 60px 0 30px;
         }
 
         .footer-cta {
-            background: radial-gradient(circle at top, rgba(46, 196, 182, 0.2), rgba(6, 54, 71, 0.9) 60%),
-                        linear-gradient(135deg, var(--brand-deep), #0a2030);
+            background: radial-gradient(circle at top, rgba(16, 185, 129, 0.2), rgba(11, 21, 38, 0.85) 60%),
+                        linear-gradient(135deg, #0f172a, #14233d);
             border-radius: 24px;
             padding: 48px 28px;
             text-align: center;
@@ -792,7 +647,7 @@
         }
 
         .footer-cta .cta-btn {
-            background: linear-gradient(135deg, var(--accent), #22c3b4);
+            background: #22c55e;
             color: #0b1526;
             padding: 14px 28px;
             border-radius: 14px;
@@ -817,34 +672,6 @@
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 22px;
-        }
-
-        .footer-brand {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .footer-logo-wrap {
-            width: 52px;
-            height: 52px;
-            border-radius: 14px;
-            background: #ffffff;
-            display: grid;
-            place-items: center;
-            box-shadow: 0 12px 24px rgba(2, 10, 20, 0.25);
-        }
-
-        .footer-logo {
-            width: 80%;
-            height: 80%;
-            object-fit: contain;
-            display: block;
-        }
-
-        .footer-brand strong {
-            line-height: 1;
-            font-size: 18px;
         }
 
         .footer h4 {
@@ -937,8 +764,8 @@
         }
 
         .app-section {
-            background: radial-gradient(circle at 70% 25%, rgba(46, 196, 182, 0.28), rgba(6, 54, 71, 0.92) 60%),
-                        linear-gradient(135deg, var(--brand-deep), #0a2030);
+            background: radial-gradient(circle at 70% 25%, rgba(16, 185, 129, 0.22), rgba(11, 21, 38, 0.9) 60%),
+                        linear-gradient(135deg, #0b1526, #111827);
             color: #e2e8f0;
         }
 
@@ -953,8 +780,8 @@
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            background: rgba(46, 196, 182, 0.18);
-            color: var(--accent);
+            background: rgba(45, 212, 191, 0.18);
+            color: #2dd4bf;
             padding: 6px 14px;
             border-radius: 999px;
             font-size: 12px;
@@ -968,7 +795,7 @@
         }
 
         .app-title span {
-            color: var(--accent);
+            color: #2dd4bf;
         }
 
         .app-copy {
@@ -987,9 +814,9 @@
         }
 
         .app-list li::before {
-            content: "\2713";
+            content: "✓";
             margin-right: 8px;
-            color: var(--accent);
+            color: #22c55e;
             font-weight: 700;
         }
 
@@ -1001,7 +828,7 @@
         }
 
         .app-button {
-            background: linear-gradient(135deg, var(--accent), #22c3b4);
+            background: #1fbf84;
             color: #0b1526;
             border: none;
             border-radius: 14px;
@@ -1011,7 +838,7 @@
             align-items: center;
             gap: 10px;
             min-width: 220px;
-            box-shadow: 0 14px 30px rgba(34, 195, 180, 0.35);
+            box-shadow: 0 14px 30px rgba(31, 191, 132, 0.35);
         }
 
         .app-button span {
@@ -1041,7 +868,7 @@
             width: min(520px, 100%);
             border-radius: 22px;
             padding: 18px;
-            background: linear-gradient(180deg, var(--brand-deep), #1f2937);
+            background: linear-gradient(180deg, #0f172a, #1f2937);
             border: 2px solid rgba(148, 163, 184, 0.25);
             box-shadow: 0 30px 60px rgba(15, 23, 42, 0.6);
         }
@@ -1309,42 +1136,22 @@
             <p class="lead">From front desk to final report, labtech.lk keeps every step connected with secure audit trails.</p>
             <div class="feature-grid">
                 <div class="feature-card">
-                    <div class="feature-icon">
-                        <svg viewBox="0 0 24 24" aria-hidden="true">
-                            <rect x="2" y="5" width="20" height="14" rx="2"></rect>
-                            <path d="M2 10h20"></path>
-                            <path d="M6 15h4"></path>
-                        </svg>
-                    </div>
+                    <div class="feature-icon">💳</div>
                     <h4>Patient + Billing</h4>
                     <p>Quick billing, discounts, package handling, and multi-payment support.</p>
                 </div>
                 <div class="feature-card">
-                    <div class="feature-icon">
-                        <svg viewBox="0 0 24 24" aria-hidden="true">
-                            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
-                        </svg>
-                    </div>
+                    <div class="feature-icon">🧪</div>
                     <h4>Sample Tracking</h4>
                     <p>Specimen status timelines, barcode labels, and center wise queues.</p>
                 </div>
                 <div class="feature-card">
-                    <div class="feature-icon">
-                        <svg viewBox="0 0 24 24" aria-hidden="true">
-                            <circle cx="12" cy="12" r="10"></circle>
-                            <path d="M9 12l2 2 4-4"></path>
-                        </svg>
-                    </div>
+                    <div class="feature-icon">✅</div>
                     <h4>Results & Validation</h4>
                     <p>Structured test parameters, flags, and approval workflows.</p>
                 </div>
                 <div class="feature-card">
-                    <div class="feature-icon">
-                        <svg viewBox="0 0 24 24" aria-hidden="true">
-                            <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 7h18s-3 0-3-7"></path>
-                            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-                        </svg>
-                    </div>
+                    <div class="feature-icon">🔔</div>
                     <h4>Reporting & Alerts</h4>
                     <p>PDF reports, SMS/Email/WhatsApp messaging, and QR verification.</p>
                 </div>
@@ -1357,40 +1164,16 @@
             <div>
                 <h2>Built for labs, not spreadsheets.</h2>
                 <p class="lead">Align staff, reduce turnaround time, and maintain compliance with built-in audit logs and approvals.</p>
-                <div class="workflow-pills">
-                    <div class="pill"><span class="pill-icon">
-                        <svg viewBox="0 0 24 24" aria-hidden="true">
-                            <path d="M14 2v6.5l4.5 7.8A3 3 0 0 1 16 20H8a3 3 0 0 1-2.5-3.7L10 8.5V2"></path>
-                            <path d="M8 2h8"></path>
-                        </svg>
-                    </span>Specimen intake + triage</div>
-                    <div class="pill"><span class="pill-icon">
-                        <svg viewBox="0 0 24 24" aria-hidden="true">
-                            <path d="M9 2v6"></path>
-                            <path d="M15 2v6"></path>
-                            <path d="M12 12v8"></path>
-                            <path d="M7 8h10"></path>
-                            <path d="M5 8a7 7 0 0 0 14 0"></path>
-                        </svg>
-                    </span>Analyzer integration ready</div>
-                    <div class="pill"><span class="pill-icon">
-                        <svg viewBox="0 0 24 24" aria-hidden="true">
-                            <path d="M21 10c0 6-9 12-9 12s-9-6-9-12a9 9 0 0 1 18 0z"></path>
-                            <circle cx="12" cy="10" r="3"></circle>
-                        </svg>
-                    </span>Centre & doctor wise reports</div>
-                    <div class="pill"><span class="pill-icon">
-                        <svg viewBox="0 0 24 24" aria-hidden="true">
-                            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
-                            <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
-                            <line x1="12" y1="22.08" x2="12" y2="12"></line>
-                        </svg>
-                    </span>Inventory-aware workflows</div>
+                <div class="pill-list">
+                    <span>Specimen intake + triage</span>
+                    <span>Analyzer integration ready</span>
+                    <span>Centre & doctor wise reports</span>
+                    <span>Inventory-aware workflows</span>
                 </div>
             </div>
-            <div class="workflow-panel">
+            <div class="panel">
                 <h4>Workflow highlights</h4>
-                <ul>
+                <ul style="margin:0; padding-left:18px; color: var(--muted);">
                     <li>Sample collected -> lab received -> tested -> validated -> approved.</li>
                     <li>Automatic TAT tracking and SLA alerts.</li>
                     <li>Audit trail for every result update.</li>
@@ -1404,44 +1187,19 @@
             <h2>Core modules</h2>
             <p class="lead">Pick the modules you need and scale for multi-centre operations.</p>
             <div class="feature-grid">
-                <div class="feature-card module-card">
-                    <div class="module-icon">
-                        <svg viewBox="0 0 24 24" aria-hidden="true">
-                            <rect x="9" y="2" width="6" height="4" rx="1"></rect>
-                            <path d="M9 4H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2"></path>
-                        </svg>
-                    </div>
+                <div class="feature-card">
                     <h4>Test Master</h4>
                     <p>Departments, panels, reference ranges, and billing visibility.</p>
                 </div>
-                <div class="feature-card module-card">
-                    <div class="module-icon">
-                        <svg viewBox="0 0 24 24" aria-hidden="true">
-                            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
-                            <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
-                            <line x1="12" y1="22.08" x2="12" y2="12"></line>
-                        </svg>
-                    </div>
+                <div class="feature-card">
                     <h4>Inventory</h4>
                     <p>Reagents, consumption tracking, reorder alerts, and suppliers.</p>
                 </div>
-                <div class="feature-card module-card">
-                    <div class="module-icon">
-                        <svg viewBox="0 0 24 24" aria-hidden="true">
-                            <line x1="12" y1="20" x2="12" y2="10"></line>
-                            <line x1="18" y1="20" x2="18" y2="4"></line>
-                            <line x1="6" y1="20" x2="6" y2="16"></line>
-                        </svg>
-                    </div>
+                <div class="feature-card">
                     <h4>Analytics</h4>
                     <p>Operational dashboards, KPI summaries, and financials.</p>
                 </div>
-                <div class="feature-card module-card">
-                    <div class="module-icon">
-                        <svg viewBox="0 0 24 24" aria-hidden="true">
-                            <path d="M12 2l7 4v6c0 5-3.5 9-7 10-3.5-1-7-5-7-10V6l7-4z"></path>
-                        </svg>
-                    </div>
+                <div class="feature-card">
                     <h4>Patient Portal</h4>
                     <p>Secure report delivery with download links and QR checks.</p>
                 </div>
@@ -1465,46 +1223,33 @@
         <div class="container split">
             <div>
                 <h2>Request Demo</h2>
-                <p class="lead">Tell us about your lab and we will contact you with a personalized demo and onboarding plan.</p>
-                @if (session('demo_success'))
-                    <div class="demo-success">{{ session('demo_success') }}</div>
-                @endif
-                @if (session('demo_error'))
-                    <div class="demo-error-banner">{{ session('demo_error') }}</div>
-                @endif
-
+                <p class="lead">Demo booking placeholder. We will activate online demo requests here soon.</p>
             </div>
             <div class="panel">
-                <h4>Demo Request Form</h4>
-                <form class="demo-form" method="post" action="{{ route('demo.request') }}">
-                    @csrf
+                <h4>Demo Request Form (Coming Soon)</h4>
+                <form class="demo-form">
                     <label class="demo-field">
                         Your name
-                        <input class="demo-input" name="name" type="text" value="{{ old('name') }}" required>
-                        @error('name')<small class="demo-error">{{ $message }}</small>@enderror
+                        <input class="demo-input" type="text" placeholder="Full name" disabled>
                     </label>
                     <label class="demo-field">
                         Lab name
-                        <input class="demo-input" name="lab_name" type="text" value="{{ old('lab_name') }}" required>
-                        @error('lab_name')<small class="demo-error">{{ $message }}</small>@enderror
+                        <input class="demo-input" type="text" placeholder="Lab / center name" disabled>
                     </label>
                     <label class="demo-field">
-                        Email
-                        <input class="demo-input" name="email" type="email" value="{{ old('email') }}" required>
-                        @error('email')<small class="demo-error">{{ $message }}</small>@enderror
-                    </label>
-                    <label class="demo-field">
-                        Mobile number
-                        <input class="demo-input" name="phone" type="text" value="{{ old('phone') }}" required>
-                        @error('phone')<small class="demo-error">{{ $message }}</small>@enderror
-                    </label>
-                    <label class="demo-field">
-                        Message
-                        <textarea class="demo-textarea" name="message" placeholder="Tell us about your needs">{{ old('message') }}</textarea>
-                        @error('message')<small class="demo-error">{{ $message }}</small>@enderror
+                        Mobile number <span class="demo-badge">OTP Required</span>
+                        <div class="demo-inline">
+                            <input class="demo-input" type="text" value="+94" disabled>
+                            <input class="demo-input" type="text" placeholder="Mobile no." disabled>
+                        </div>
                     </label>
                     <div class="demo-actions">
-                        <button class="demo-primary" type="submit">Send Request</button>
+                        <button class="demo-secondary" type="button" disabled>+ Add referral code</button>
+                        <label class="demo-check">
+                            <input type="checkbox" disabled>
+                            <span>I agree to Terms &amp; Conditions and Privacy Policy.</span>
+                        </label>
+                        <button class="demo-primary" type="button" disabled>Continue</button>
                     </div>
                 </form>
             </div>
@@ -1514,7 +1259,7 @@
     <section class="section why-section">
         <div class="container">
             <div class="why-header">
-                <h2>Why labtech.lk-></h2>
+                <h2>Why labtech.lk</h2>
                 <p class="lead">A cloud-first LIS that is easy to use, secure, and built for fast-growing diagnostic labs. Here are the benefits our customers love.</p>
                 <a href="/register">Start free trial -></a>
             </div>
@@ -1648,13 +1393,11 @@
 
             <div class="footer-grid">
                 <div>
-                    <div class="footer-brand">
-                        <div class="footer-logo-wrap">
-                            <img class="footer-logo" src="{{ asset('images/logo.png') }}" alt="labtech.lk logo">
-                        </div>
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <img src="{{ asset('images/logo.png') }}" alt="labtech.lk logo" style="width:38px;height:38px;border-radius:10px;background:#fff;padding:6px;">
                         <strong style="color:#fff;">labtech.lk</strong>
                     </div>
-                    <p style="margin-top:10px; color:#94a3b8;">Modern Medical Laboratory & Clinicand laboratory management solution designed for healthcare providers in Sri Lanka.</p>
+                    <p style="margin-top:10px; color:#94a3b8;">Modern Medical Laboratory & Clinical Laboratory Management System</p>
                     <div class="social-links" style="margin-top:12px;">
                         <a href="#" aria-label="Facebook">
                             <img src="{{ asset('images/facebook.png') }}" alt="Facebook">
@@ -1671,17 +1414,8 @@
                     </div>
                 </div>
                 <div>
-                    <h4>Quick Links</h4>
-                    <a href="/">Home</a><br>
-                    <a href="#features">Features</a><br>
-                    <a href="#pricing">Pricing</a><br>
-                    <a href="#workflow">Workflow</a><br>
-                    <a href="#demo">About Us</a>
                 </div>
                 <div>
-                    <h4>Legal</h4>
-                    <a href="/privacy">Privacy Policy</a><br>
-                    <a href="/terms">Terms of Service</a>
                 </div>
                 <div>
                     <h4>Contact</h4>

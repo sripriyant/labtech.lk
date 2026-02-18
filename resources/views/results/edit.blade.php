@@ -164,6 +164,19 @@
             pointer-events: none;
         }
 
+        .image-preview {
+            margin-bottom: 6px;
+        }
+
+        .image-preview img {
+            max-width: 160px;
+            max-height: 120px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 2px;
+            background: #fff;
+        }
+
         .btn {
             background: #0a6fb3;
             color: #fff;
@@ -305,7 +318,7 @@
             </div>
         </div>
         <div>
-            <form id="editForm" method="post">
+            <form id="editForm" method="post" enctype="multipart/form-data">
                 @csrf
                 <input id="patientName" name="patient_name" type="hidden">
                 <input id="patientSex" name="patient_sex" type="hidden">
@@ -384,6 +397,13 @@
                     'result_remarks' => $result?->remarks,
                     'flag' => $result?->flag,
                     'show_interpretation' => (bool) ($parameter->show_interpretation ?? true),
+                    'display_type' => $parameter->display_type ?? 'textbox',
+                    'font_size' => $parameter->font_size ?? 14,
+                    'dropdown_options' => $parameter->dropdown_options ?? [],
+                    'image_url' => $result?->image_path ? \Illuminate\Support\Facades\Storage::url($result->image_path) : null,
+                    'reference_image_url' => $parameter->reference_image_path ? \Illuminate\Support\Facades\Storage::url($parameter->reference_image_path) : null,
+                    'reference_image_width' => $parameter->reference_image_width,
+                    'reference_image_height' => $parameter->reference_image_height,
                 ];
             })->values(),
         ];
@@ -493,6 +513,53 @@
                     if (diffError) {
                         diffError.style.display = 'none';
                     }
+                    function escapeHtml(value) {
+                        return (value || '').toString()
+                            .replace(/&/g, '&amp;')
+                            .replace(/</g, '&lt;')
+                            .replace(/>/g, '&gt;')
+                            .replace(/"/g, '&quot;')
+                            .replace(/'/g, '&#39;');
+                    }
+
+                    function renderResultField(param) {
+                        var fieldName = 'parameter_results[' + param.id + '][result_value]';
+                        var size = param.font_size || 14;
+                        var style = 'style="font-size:' + size + 'px;"';
+                        var value = param.result_value || '';
+                        if (param.display_type === 'dropdown') {
+                            var options = Array.isArray(param.dropdown_options) ? param.dropdown_options : [];
+                            var select = '<select class="row-input" name="' + fieldName + '" ' + style + '>';
+                            select += '<option value=""></option>';
+                            options.forEach(function (option) {
+                                var escaped = escapeHtml(option);
+                                select += '<option value="' + escaped + '"' + (option === value ? ' selected' : '') + '>' + escaped + '</option>';
+                            });
+                            select += '</select>';
+                            return select;
+                        }
+                        if (param.display_type === 'image') {
+                            var imgPreview = '';
+                            if (param.image_url) {
+                                imgPreview = '<div class="image-preview"><img src="' + escapeHtml(param.image_url) + '" alt="Result image"></div>';
+                            }
+                            return imgPreview +
+                                '<input class="row-input" type="file" accept="image/*" name="parameter_results[' + param.id + '][image]" ' + style + '>';
+                        }
+                        if (param.display_type === 'label') {
+                            var labelHtml = '<div class="row-input" ' + style + '>' + escapeHtml(value || param.remarks || '') + '</div>';
+                            if (param.reference_image_url) {
+                                var maxW = param.reference_image_width || 180;
+                                var maxH = param.reference_image_height || 140;
+                                var imgStyle = 'max-width:' + maxW + 'px;max-height:' + maxH + 'px;';
+                                labelHtml += '<div class="image-preview"><img src="' + escapeHtml(param.reference_image_url) + '" alt="Reference image" style="' + imgStyle + '"></div>';
+                            }
+                            return labelHtml;
+                        }
+                        var type = param.display_type === 'number' ? 'number' : 'text';
+                        return '<input class="row-input" name="' + fieldName + '" type="' + type + '" value="' + escapeHtml(value) + '" ' + style + '>';
+                    }
+
                     parameterRows.innerHTML = params.map(function (param) {
                         var label = param.symbol ? (param.name + ' (' + param.symbol + ')') : param.name;
                         var showInterpretation = param.show_interpretation !== false;
@@ -502,10 +569,10 @@
                         return '' +
                             '<tr data-show-interpretation="' + (showInterpretation ? '1' : '0') + '">' +
                             '<td>' + label + '</td>' +
-                            '<td><input class="row-input" name="parameter_results[' + param.id + '][result_value]" value="' + (param.result_value || '') + '"></td>' +
-                            '<td><input class="row-input readonly" name="parameter_results[' + param.id + '][unit]" value="' + (param.unit || '') + '" readonly></td>' +
-                            '<td><input class="row-input readonly" name="parameter_results[' + param.id + '][reference_range]" value="' + (param.reference_range || '') + '" readonly></td>' +
-                            '<td><input class="row-input" name="parameter_results[' + param.id + '][remarks]" value="' + (param.result_remarks || param.remarks || '') + '"></td>' +
+                            '<td>' + renderResultField(param) + '</td>' +
+                            '<td><input class="row-input readonly" name="parameter_results[' + param.id + '][unit]" value="' + escapeHtml(param.unit || '') + '" readonly></td>' +
+                            '<td><input class="row-input readonly" name="parameter_results[' + param.id + '][reference_range]" value="' + escapeHtml(param.reference_range || '') + '" readonly></td>' +
+                            '<td><input class="row-input" name="parameter_results[' + param.id + '][remarks]" value="' + escapeHtml(param.result_remarks || param.remarks || '') + '"></td>' +
                             '<td>' + flagCell + '</td>' +
                             '</tr>';
                     }).join('');

@@ -7,17 +7,20 @@ use Illuminate\Support\Facades\Log;
 
 class SmsGateway
 {
-    // ✅ NEW: Render {{placeholders}} in SMS template
+    // ✅ Render {{placeholders}} and {placeholders} in SMS template
     public function renderTemplate(string $template, array $data = []): string
     {
         $message = (string) $template;
 
         foreach ($data as $key => $value) {
-            $message = str_replace('{{' . $key . '}}', (string) ($value ?? ''), $message);
+            $val = (string) ($value ?? '');
+            $message = str_replace('{{' . $key . '}}', $val, $message);
+            $message = str_replace('{' . $key . '}', $val, $message);
         }
 
-        // remove leftover placeholders like {{something}}
+        // remove leftover placeholders like {{something}} or {something}
         $message = preg_replace('/{{\s*[^}]+\s*}}/', '', $message);
+        $message = preg_replace('/{\s*[^}]+\s*}/', '', $message);
 
         // normalize spaces
         $message = trim(preg_replace('/\s+/', ' ', $message));
@@ -28,6 +31,13 @@ class SmsGateway
     public function send(string $to, string $message, array $settings = []): array
     {
         $gatewayUrl = trim((string) ($settings['sms_gateway_url'] ?? ''));
+        $apiToken = trim((string) ($settings['sms_api_token'] ?? '')); // Text.lk token
+        $apiKey   = trim((string) ($settings['sms_api_key'] ?? ''));   // optional
+
+        if ($gatewayUrl === '' && $apiToken !== '') {
+            $gatewayUrl = 'https://app.text.lk/api/v3/';
+        }
+
         if ($gatewayUrl === '') {
             return ['ok' => false, 'error' => 'SMS gateway URL not configured.'];
         }
@@ -43,8 +53,6 @@ class SmsGateway
         $paramSenderId = trim((string) ($settings['sms_param_sender_id'] ?? 'sender_id')) ?: 'sender_id';
 
         $senderId = trim((string) ($settings['sms_sender_id'] ?? ''));
-        $apiToken = trim((string) ($settings['sms_api_token'] ?? '')); // Text.lk token
-        $apiKey   = trim((string) ($settings['sms_api_key'] ?? ''));   // optional
 
         // Extra params (key=value lines)
         $extra = $this->parseExtraParams((string) ($settings['sms_extra_params'] ?? ''));

@@ -75,6 +75,10 @@
             flex-wrap: wrap;
         }
 
+        .action-group form {
+            margin: 0;
+        }
+
         .patient-group {
             background: rgba(14, 165, 233, 0.08);
         }
@@ -197,6 +201,26 @@
                                     <a class="link-btn" href="{{ route('reports.show', $item) }}" target="_blank" rel="noopener">Open</a>
                                     <a class="link-btn secondary" href="{{ route('reports.show', $item) }}?print=1" target="_blank" rel="noopener">Print</a>
                                     <a class="link-btn secondary" href="{{ route('reports.show', $item) }}?download=1" target="_blank" rel="noopener">PDF</a>
+                                    @auth
+                                        @if (in_array($item->status, ['VALIDATED', 'APPROVED'], true))
+                                            <form method="post" action="{{ route('reports.sms', $item) }}" onsubmit="return confirm('Send report SMS to patient?');">
+                                                @csrf
+                                                <button class="link-btn secondary" type="submit">SMS Ready</button>
+                                            </form>
+                                            <form method="post" action="{{ route('reports.sms.link', $item) }}" onsubmit="return confirm('Send report link SMS to patient?');">
+                                                @csrf
+                                                <button class="link-btn secondary" type="submit">SMS Link</button>
+                                            </form>
+                                            @if (!empty($item->specimen?->invoice_id))
+                                                <form method="post" action="{{ route('reports.invoice.sms', $item) }}" onsubmit="return confirm('Send invoice SMS to patient?');">
+                                                    @csrf
+                                                    <button class="link-btn secondary" type="submit">SMS Invoice</button>
+                                                </form>
+                                            @endif
+                                        @else
+                                            <span style="font-size:11px;color:var(--muted);">Approve first</span>
+                                        @endif
+                                    @endauth
                                 </div>
                             </td>
                         </tr>

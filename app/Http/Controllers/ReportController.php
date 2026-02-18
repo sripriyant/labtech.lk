@@ -4,9 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Center;
 use App\Models\Doctor;
+use App\Models\Lab;
 use App\Models\Patient;
 use App\Models\Setting;
 use App\Models\SpecimenTest;
+use App\Services\SmsGateway;
 use Dompdf\Dompdf;
 use Dompdf\Options;
 use Endroid\QrCode\Builder\Builder;
@@ -22,7 +24,7 @@ class ReportController extends Controller
     {
         $sort = request()->query('sort', 'unprinted_first');
         $items = SpecimenTest::query()
-            ->with(['specimen.patient', 'testMaster', 'result', 'parameterResults'])
+            ->with(['specimen.patient', 'specimen.invoice', 'testMaster', 'result', 'parameterResults'])
             ->orderByDesc('id')
             ->limit(100)
             ->get();
@@ -208,11 +210,15 @@ class ReportController extends Controller
             abort(403);
         }
 
-        $patient = $specimenTest->specimen?->patient;
-        $age = $specimenTest->specimen?->age_display ?? null;
+        $specimen = $specimenTest->specimen;
+        $patient = $specimen?->patient;
+        $age = $specimen?->age_display ?? null;
+        if ($age === null || $age === '') {
+            $age = $this->computeAgeDisplay($patient?->dob, $specimen?->created_at);
+        }
 
         $referredBy = null;
-        $invoice = $specimenTest->specimen?->invoice;
+        $invoice = $specimen?->invoice;
         if ($invoice?->referral_type === 'doctor' && $invoice->referral_id) {
             $referredBy = Doctor::query()->whereKey($invoice->referral_id)->value('name');
         } elseif ($invoice?->referral_type === 'center' && $invoice->referral_id) {
@@ -349,6 +355,153 @@ class ReportController extends Controller
         }
 
         return view('reports.lab_report', $viewData);
+    }
+
+    public function sendReportSms(SpecimenTest $specimenTest): RedirectResponse
+    {
+        $this->requirePermission('results.validate');
+
+        $specimenTest->load(['specimen.patient', 'specimen.invoice']);
+        if (!in_array($specimenTest->status, ['VALIDATED', 'APPROVED'], true)) {
+            return redirect()->back()->with('sms_error', 'Report is not approved yet.');
+        }
+
+        $specimen = $specimenTest->specimen;
+        $patient = $specimen?->patient;
+        $phone = $patient?->phone;
+        $labId = (int) ($specimenTest->lab_id ?? $specimen?->lab_id ?? auth()->user()?->lab_id ?? 0);
+
+        $settings = Setting::valuesForLab($labId);
+        $template = trim((string) ($settings['sms_template_report_ready'] ?? ''));
+        if ($template === '') {
+            $template = 'Hi {patient_name}, your report is ready.';
+        }
+
+        $reportUrl = url()->route('reports.show', $specimenTest);
+        $invoiceNo = $specimen?->invoice?->invoice_no ?? '';
+        $amount = $specimen?->invoice?->net_total;
+
+        $result = $this->sendReportSmsMessage($phone, $labId, $settings, $template, [
+            'patient_name' => $patient?->name ?? 'Patient',
+            'specimen_no' => $specimen?->specimen_no ?? '',
+            'invoice_no' => $invoiceNo,
+            'amount' => $amount !== null ? number_format((float) $amount, 2, '.', '') : '',
+            'report_link' => $reportUrl,
+        ]);
+
+        if (!$result['ok']) {
+            return redirect()->back()->with('sms_error', $result['error'] ?? 'Failed to send SMS.');
+        }
+
+        return redirect()->back()->with('sms_status', 'Report SMS sent.');
+    }
+
+    public function sendReportLinkSms(SpecimenTest $specimenTest): RedirectResponse
+    {
+        $this->requirePermission('results.validate');
+
+        $specimenTest->load(['specimen.patient', 'specimen.invoice']);
+        if (!in_array($specimenTest->status, ['VALIDATED', 'APPROVED'], true)) {
+            return redirect()->back()->with('sms_error', 'Report is not approved yet.');
+        }
+
+        $specimen = $specimenTest->specimen;
+        $patient = $specimen?->patient;
+        $phone = $patient?->phone;
+        $labId = (int) ($specimenTest->lab_id ?? $specimen?->lab_id ?? auth()->user()?->lab_id ?? 0);
+
+        $settings = Setting::valuesForLab($labId);
+        $template = trim((string) ($settings['sms_template_report_link'] ?? ''));
+        if ($template === '') {
+            $template = 'Hi {patient_name}, your report is ready: {report_link}';
+        }
+
+        $reportUrl = url()->route('reports.show', $specimenTest);
+        $invoiceNo = $specimen?->invoice?->invoice_no ?? '';
+        $amount = $specimen?->invoice?->net_total;
+
+        $result = $this->sendReportSmsMessage($phone, $labId, $settings, $template, [
+            'patient_name' => $patient?->name ?? 'Patient',
+            'specimen_no' => $specimen?->specimen_no ?? '',
+            'invoice_no' => $invoiceNo,
+            'amount' => $amount !== null ? number_format((float) $amount, 2, '.', '') : '',
+            'report_link' => $reportUrl,
+        ]);
+
+        if (!$result['ok']) {
+            return redirect()->back()->with('sms_error', $result['error'] ?? 'Failed to send SMS.');
+        }
+
+        return redirect()->back()->with('sms_status', 'Report link SMS sent.');
+    }
+
+    public function sendInvoiceSms(SpecimenTest $specimenTest): RedirectResponse
+    {
+        $this->requirePermission('billing.access');
+
+        $specimenTest->load(['specimen.patient', 'specimen.invoice']);
+        $specimen = $specimenTest->specimen;
+        if (!$specimen || !$specimen->invoice_id) {
+            return redirect()->back()->with('sms_error', 'Invoice not available for this report.');
+        }
+
+        $patient = $specimen->patient;
+        $phone = $patient?->phone;
+        $labId = (int) ($specimenTest->lab_id ?? $specimen?->lab_id ?? auth()->user()?->lab_id ?? 0);
+
+        $settings = Setting::valuesForLab($labId);
+        $template = trim((string) ($settings['sms_template_billing'] ?? ''));
+        if ($template === '') {
+            $template = 'Invoice {invoice_no}: {invoice_link}';
+        }
+
+        $invoiceUrl = url()->route('invoice.show', $specimen);
+        $invoiceNo = $specimen?->invoice?->invoice_no ?? '';
+        $amount = $specimen?->invoice?->net_total;
+
+        $result = $this->sendReportSmsMessage($phone, $labId, $settings, $template, [
+            'patient_name' => $patient?->name ?? 'Patient',
+            'specimen_no' => $specimen?->specimen_no ?? '',
+            'invoice_no' => $invoiceNo,
+            'amount' => $amount !== null ? number_format((float) $amount, 2, '.', '') : '',
+            'report_link' => $invoiceUrl,
+            'invoice_link' => $invoiceUrl,
+        ]);
+
+        if (!$result['ok']) {
+            return redirect()->back()->with('sms_error', $result['error'] ?? 'Failed to send SMS.');
+        }
+
+        return redirect()->back()->with('sms_status', 'Invoice SMS sent.');
+    }
+
+    private function sendReportSmsMessage(?string $phone, int $labId, array $settings, string $template, array $data): array
+    {
+        $phone = trim((string) $phone);
+        if ($phone === '') {
+            return ['ok' => false, 'error' => 'Patient phone number not available for SMS.'];
+        }
+
+        if ($labId) {
+            $labSmsEnabled = Lab::query()->whereKey($labId)->value('sms_enabled');
+            if ($labSmsEnabled === false || $labSmsEnabled === 0 || $labSmsEnabled === '0') {
+                return ['ok' => false, 'error' => 'SMS is disabled for this lab.'];
+            }
+        }
+
+        if (($settings['sms_enabled'] ?? '1') !== '1') {
+            return ['ok' => false, 'error' => 'SMS is disabled for this lab.'];
+        }
+
+        $gateway = new SmsGateway();
+        $labName = $settings['billing_lab_name'] ?? ($settings['lab_name'] ?? '');
+        $data['lab_name'] = $labName !== '' ? $labName : 'Lab';
+        $message = $gateway->renderTemplate($template, $data);
+        if ($message === '') {
+            return ['ok' => false, 'error' => 'SMS template is empty.'];
+        }
+
+        return $gateway->send($phone, $message, $settings);
     }
 
     public function asset(string $type): Response
@@ -570,5 +723,32 @@ class ReportController extends Controller
         $svg .= '</svg>';
 
         return $svg;
+    }
+
+    private function computeAgeDisplay($dob, $reference): ?string
+    {
+        if (!$dob) {
+            return null;
+        }
+
+        $reference = $reference ?? now();
+        $diff = $dob->diff($reference);
+        if ($diff->invert) {
+            return null;
+        }
+
+        if ($diff->y > 0) {
+            return (string) $diff->y;
+        }
+
+        if ($diff->m > 0 && $diff->d > 0) {
+            return $diff->m . ' M ' . $diff->d . ' D';
+        }
+
+        if ($diff->m > 0) {
+            return $diff->m . ' M';
+        }
+
+        return $diff->d . ' D';
     }
 }

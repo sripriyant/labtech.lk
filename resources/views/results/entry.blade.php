@@ -234,6 +234,19 @@
             display: none;
         }
 
+        .image-preview {
+            margin-bottom: 6px;
+        }
+
+        .image-preview img {
+            max-width: 160px;
+            max-height: 120px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 2px;
+            background: #fff;
+        }
+
         @media (max-width: 1100px) {
             .filters {
                 grid-template-columns: repeat(2, 1fr);
@@ -342,7 +355,7 @@
                 </div>
             </div>
             <div>
-                <form id="entryForm" method="post" action="{{ route('results.entry.store') }}">
+                <form id="entryForm" method="post" action="{{ route('results.entry.store') }}" enctype="multipart/form-data">
                     @csrf
                     <input type="hidden" name="specimen_test_id" id="selectedSpecimenTest">
                     <div class="field">
@@ -449,6 +462,10 @@
                     'display_type' => $parameter->display_type ?? 'textbox',
                     'font_size' => $parameter->font_size ?? 14,
                     'dropdown_options' => $parameter->dropdown_options ?? [],
+                    'image_url' => $result?->image_path ? \Illuminate\Support\Facades\Storage::url($result->image_path) : null,
+                    'reference_image_url' => $parameter->reference_image_path ? \Illuminate\Support\Facades\Storage::url($parameter->reference_image_path) : null,
+                    'reference_image_width' => $parameter->reference_image_width,
+                    'reference_image_height' => $parameter->reference_image_height,
                 ];
                 })->values(),
             ];
@@ -590,8 +607,23 @@
                             select += '</select>';
                             return select;
                         }
+                        if (param.display_type === 'image') {
+                            var imgPreview = '';
+                            if (param.image_url) {
+                                imgPreview = '<div class="image-preview"><img src="' + escapeHtml(param.image_url) + '" alt="Result image"></div>';
+                            }
+                            return imgPreview +
+                                '<input class="row-input" type="file" accept="image/*" name="parameter_results[' + param.id + '][image]" ' + style + '>';
+                        }
                         if (param.display_type === 'label') {
-                            return '<div class="row-input" ' + style + '>' + escapeHtml(value || param.remarks || '') + '</div>';
+                            var labelHtml = '<div class="row-input" ' + style + '>' + escapeHtml(value || param.remarks || '') + '</div>';
+                            if (param.reference_image_url) {
+                                var maxW = param.reference_image_width || 180;
+                                var maxH = param.reference_image_height || 140;
+                                var imgStyle = 'max-width:' + maxW + 'px;max-height:' + maxH + 'px;';
+                                labelHtml += '<div class="image-preview"><img src="' + escapeHtml(param.reference_image_url) + '" alt="Reference image" style="' + imgStyle + '"></div>';
+                            }
+                            return labelHtml;
                         }
                         var type = param.display_type === 'number' ? 'number' : 'text';
                         return '<input class="row-input" name="' + fieldName + '" type="' + type + '" value="' + escapeHtml(value) + '" ' + style + '>';

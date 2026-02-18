@@ -8,6 +8,7 @@ use App\Models\Setting;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use App\Http\Controllers\Concerns\LipidInterpretation;
@@ -127,6 +128,7 @@ class EditResultController extends Controller
             'unit' => ['nullable', 'string', 'max:50'],
             'reference_range' => ['nullable', 'string', 'max:50'],
             'parameter_results' => ['nullable', 'array'],
+            'parameter_results.*.image' => ['nullable', 'image', 'max:5120'],
             'is_repeated' => ['nullable', 'boolean'],
             'is_confirmed' => ['nullable', 'boolean'],
         ]);
@@ -134,8 +136,9 @@ class EditResultController extends Controller
         $userId = auth()->id();
         $ip = $request->ip();
         $ua = (string) $request->userAgent();
+        $imageFiles = $request->file('parameter_results', []);
 
-        DB::transaction(function () use ($specimenTest, $data, $userId, $ip, $ua) {
+        DB::transaction(function () use ($specimenTest, $data, $userId, $ip, $ua, $imageFiles) {
             $specimenTest->load(['specimen.patient', 'result']);
             $specimenTest->update([
                 'is_repeated' => (bool) ($data['is_repeated'] ?? false),
@@ -168,8 +171,8 @@ class EditResultController extends Controller
             }
 
             $specimenTest->load(['testMaster.parameters', 'parameterResults', 'result']);
-        $parameters = $specimenTest->testMaster?->parameters ?? collect();
-        $parameters = $parameters->sortBy('sort_order')->values();
+            $parameters = $specimenTest->testMaster?->parameters ?? collect();
+            $parameters = $parameters->sortBy('sort_order')->values();
             $patientSex = $specimenTest->specimen?->patient?->sex ?? null;
             $patientAge = null;
             if ($specimenTest->specimen?->age_unit === 'Y' && $specimenTest->specimen?->age_years !== null) {
@@ -253,6 +256,16 @@ class EditResultController extends Controller
                     $unit = trim((string) $parameter->unit);
                     $ref = trim((string) $parameter->reference_range);
                     $remarks = trim((string) ($payload['remarks'] ?? ''));
+                    $imagePath = null;
+                    if (($parameter->display_type ?? '') === 'image') {
+                        $imageFile = $imageFiles[$parameter->id]['image'] ?? null;
+                        if ($imageFile) {
+                            $extension = $imageFile->getClientOriginalExtension() ?: 'jpg';
+                            $nameSlug = Str::slug($parameter->name ?: 'parameter');
+                            $fileName = $nameSlug . '-' . Str::random(8) . '.' . $extension;
+                            $imagePath = $imageFile->storeAs('parameter-results/' . $specimenTest->id, $fileName, 'public');
+                        }
+                    }
                     $numericValue = is_numeric($value) ? (float) $value : null;
                     $flag = null;
                     if ($parameter->show_interpretation ?? true) {
@@ -260,22 +273,26 @@ class EditResultController extends Controller
                             ?? $this->computeFlagFromRange($value, $ref, $patientSex);
                     }
 
-                    if ($value === '' && $remarks === '' && $flag === '') {
+                    if ($value === '' && $remarks === '' && $flag === '' && $imagePath === null) {
                         continue;
                     }
 
-                    $preparedParameterResults[$parameter->id] = [
+                    $rowPayload = [
                         'result_value' => $value,
                         'unit' => $unit ?: null,
                         'reference_range' => $ref ?: null,
                         'remarks' => $remarks ?: null,
                         'flag' => $flag ?: null,
                     ];
+                    if ($imagePath !== null) {
+                        $rowPayload['image_path'] = $imagePath;
+                    }
+                    $preparedParameterResults[$parameter->id] = $rowPayload;
                 }
 
                 if (empty($preparedParameterResults)) {
                     throw ValidationException::withMessages([
-                        'parameter_results' => ['Please enter at least one parameter value, remark, or flag before saving.'],
+                        'parameter_results' => ['Please enter at least one parameter value, remark, flag, or image before saving.'],
                     ]);
                 }
 
